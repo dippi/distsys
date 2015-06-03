@@ -7,11 +7,11 @@ import java.io.InputStreamReader;
 public class Client {
 	private static Boolean close = false;
 
-	public static void receive(String message) {
-		System.out.println(message);
+	public static synchronized void receive(Integer id, String message) {
+		System.out.printf("[Client %s] Message: \"%s\"%n", id, message);
 	}
 
-	public static void quit() {
+	public static synchronized void quit() {
 		close = true;
 		System.out.println("Connection closed, press ENTER to quit.");
 	}
@@ -26,7 +26,9 @@ public class Client {
 			
 			String userInput;
 			while ((userInput = in.readLine()) != null && !close) {
-			    server.send(userInput);
+				synchronized(Client.class) {
+					server.send(userInput);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
