@@ -60,11 +60,11 @@ public class Server implements Runnable, Closeable {
 		try {
 			sockets[id] = null;
 			freelist.add(id);
+			
+			System.out.printf("[Client %s] Disconnected!%n", id);
 		
 			send("keys", id.toString());
 			send(encryptionManager.regenerateKeys(id));
-			
-			System.out.printf("[Client %s] Disconnected!%n", id);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

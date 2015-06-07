@@ -10,6 +10,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.xml.bind.DatatypeConverter;
 
 public class EncryptionManager {
 	public enum Algorithm { AES, RSA };
@@ -69,7 +70,13 @@ public class EncryptionManager {
 		try {
 			byte[][] result = new byte[keks.length * 2][];
 			
+			System.out.println("======== Changing DEK ========");
+			System.out.printf("from: %s%n", DatatypeConverter.printBase64Binary(dek.getEncoded()));
+			
 			dek = keyGenerator.generateKey();
+			
+			System.out.printf("to:   %s%n", DatatypeConverter.printBase64Binary(dek.getEncoded()));
+			
 			
 			for (int i = 0; i < keks.length; ++i) {
 				int j = ~(id >> i) & 1;
@@ -80,8 +87,13 @@ public class EncryptionManager {
 				int j = (id >> i) & 1;
 				int k = i + keks.length;
 				
+				System.out.printf("===== Changing DEK[%d][%d] =====%n", i, j);
+				System.out.printf("from: %s%n", DatatypeConverter.printBase64Binary(keks[i][j].getEncoded()));
+				
 				Key oldKek = keks[i][j];
 				keks[i][j] = keyGenerator.generateKey();
+				
+				System.out.printf("to:   %s%n", DatatypeConverter.printBase64Binary(keks[i][j].getEncoded()));
 				
 				result[k] = encrypt(Algorithm.AES, dek, encrypt(Algorithm.AES, oldKek, keks[i][j].getEncoded()));
 			}

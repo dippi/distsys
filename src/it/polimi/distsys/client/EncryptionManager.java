@@ -10,6 +10,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 public class EncryptionManager {
 	public enum Algorithm { AES, RSA };
@@ -68,7 +69,13 @@ public class EncryptionManager {
 		try {
 			for (int i = 0; i < keks.length; i++) {
 				if (((selector >> i) & 1) == 1) {
+					System.out.println("======== Changing DEK ========");
+					System.out.printf("from: %s%n", DatatypeConverter.printBase64Binary(dek.getEncoded()));
+					
 					dek = new SecretKeySpec(decrypt(Algorithm.AES, keks[i], keys[i]), "AES");
+					
+					System.out.printf("to:   %s%n", DatatypeConverter.printBase64Binary(dek.getEncoded()));
+					
 					break;
 				}
 			}
@@ -77,7 +84,12 @@ public class EncryptionManager {
 				if (((selector >> i) & 1) == 0) {
 					int j = i + keks.length;
 					
+					System.out.printf("====== Changing DEK[%d] =======%n", i);
+					System.out.printf("from: %s%n", DatatypeConverter.printBase64Binary(keks[i].getEncoded()));
+					
 					keks[i] = new SecretKeySpec(decrypt(Algorithm.AES, keks[i], decrypt(Algorithm.AES, dek, keys[j])), "AES");
+					
+					System.out.printf("to:   %s%n", DatatypeConverter.printBase64Binary(keks[i].getEncoded()));
 				}
 			}
 		} catch (Exception e) {
